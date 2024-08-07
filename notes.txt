@@ -1,0 +1,2 @@
+npm i pg typeorm class-transformer class-validator dotenv
+npm i @nestjs/config @nestjs/typeorm
