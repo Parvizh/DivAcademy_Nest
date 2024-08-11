@@ -1,2 +1,4 @@
 npm i pg typeorm class-transformer class-validator dotenv
 npm i @nestjs/config @nestjs/typeorm
+npm i @nestjs/swagger --force
+npm i @nestjs/jwt --force

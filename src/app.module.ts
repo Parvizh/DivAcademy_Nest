@@ -3,8 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 import * as  path from 'path';
-
+console.log(__dirname)
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -21,10 +23,12 @@ import * as  path from 'path';
         logging: true,
         synchronize: false,
         migrations: [],
-        entities: ['src/**/*.entity{.js,.ts}']
+        entities: [path.join(__dirname,'/**/*.entity{.js,.ts}')]
       })
 
-    })
+    }),
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
