@@ -19,7 +19,7 @@ export class UserEntity extends BaseEntity {
     email: string
 
     @ApiProperty()
-    @Column({ type: "varchar", name: "role", default: RolesEnum.USER })
+    @Column({ type: "varchar", name: "role", default: RolesEnum.CUSTOMER })
     role: RolesEnum
 
     @ApiProperty()
@@ -28,7 +28,7 @@ export class UserEntity extends BaseEntity {
 
     @ApiProperty()
     @Column({ type: 'integer', name: 'age' })
-    age: number
+    age: number  
 
     @BeforeInsert()
     @BeforeUpdate()

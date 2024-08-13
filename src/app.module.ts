@@ -22,7 +22,6 @@ console.log(__dirname)
         database: configService.get<string>('DB_NAME'),
         logging: true,
         synchronize: false,
-        migrations: [],
         entities: [path.join(__dirname,'/**/*.entity{.js,.ts}')]
       })
 

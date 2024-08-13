@@ -6,6 +6,9 @@ import { SignUpDto } from './dto/signup.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
+import { Roles } from './decorators/role.decorator';
+import { RolesEnum } from 'src/enum/role.enum';
+import { RolesGuard } from './guard/role.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -35,7 +38,8 @@ export class AuthController {
     }
 
     @Get('account')
-    @UseGuards(AuthGuard)
+    @Roles(RolesEnum.ADMIN)
+    @UseGuards(AuthGuard, RolesGuard)
     @ApiBearerAuth('JWT-auth')
     @ApiOkResponse({
         description: 'Return current user',
