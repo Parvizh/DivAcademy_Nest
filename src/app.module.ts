@@ -5,8 +5,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { CategoryModule } from './category/category.module';
+import { StoreModule } from './store/store.module';
+import { ProductModule } from './product/product.module';
 import * as  path from 'path';
-console.log(__dirname)
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -28,6 +30,9 @@ console.log(__dirname)
     }),
     UserModule,
     AuthModule,
+    CategoryModule,
+    StoreModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

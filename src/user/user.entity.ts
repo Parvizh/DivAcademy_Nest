@@ -1,8 +1,9 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToMany } from "typeorm";
 import * as bcrypt from "bcryptjs"
 import { BaseEntity } from "../common/base.entity";
 import { RolesEnum } from "../enum/role.enum";
 import { ApiProperty } from "@nestjs/swagger";
+import { StoreEntity } from "src/store/entities/store.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -28,7 +29,11 @@ export class UserEntity extends BaseEntity {
 
     @ApiProperty()
     @Column({ type: 'integer', name: 'age' })
-    age: number  
+    age: number
+
+    @ApiProperty()
+    @ManyToMany(() => StoreEntity, store => store.users, { cascade: true })
+    stores: StoreEntity[]
 
     @BeforeInsert()
     @BeforeUpdate()
