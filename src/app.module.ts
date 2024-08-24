@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { StoreModule } from './store/store.module';
 import { ProductModule } from './product/product.module';
+import { SpesificationModule } from './spesification/spesification.module';
+import { InventoryModule } from './inventory/inventory.module';
 import * as  path from 'path';
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import * as  path from 'path';
     CategoryModule,
     StoreModule,
     ProductModule,
+    SpesificationModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

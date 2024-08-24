@@ -1,8 +1,9 @@
 import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity } from "src/common/base.entity";
+import { BaseEntity } from "../../common/base.entity";
 import slugify from "slugify";
-import { ProductEntity } from "src/product/entitites/product.entity";
+import { ProductEntity } from "../../product/entitites/product.entity";
+import { SpesificationEntity } from "../../spesification/entities/spesification.entity";
 
 @Entity('categories')
 export class CategoryEntity extends BaseEntity {
@@ -14,22 +15,39 @@ export class CategoryEntity extends BaseEntity {
     @Column({ type: 'integer', name: 'rate', default: 999 })
     rate: number
 
+    @ApiProperty()
     @ManyToMany(() => CategoryEntity, category => category.children)
     @JoinTable({
         name: 'category_parent_subs',
         joinColumn: {
-            name: 'category_id',
+            name: 'parent_id',
             referencedColumnName: 'id'
         },
         inverseJoinColumn: {
-            name: 'parent_id',
+            name: 'sub_id',
             referencedColumnName: 'id'
         }
     })
     parents: CategoryEntity[];
 
+    @ApiProperty()
     @ManyToMany(() => CategoryEntity, category => category.parents)
     children: CategoryEntity[];
+
+    @ApiProperty()
+    @ManyToMany(() => SpesificationEntity, x => x.categories, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinTable({
+        name: 'category_spesifications',
+        joinColumn: {
+            name: 'category_id',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'spesification_id',
+            referencedColumnName: 'id',
+        },
+    })
+    spesifications: SpesificationEntity[]
 
     @ApiProperty()
     @Column({ type: 'varchar', name: 'slug' })

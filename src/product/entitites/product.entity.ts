@@ -1,8 +1,10 @@
-import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseEntity } from "src/common/base.entity";
 import slugify from "slugify";
 import { CategoryEntity } from "src/category/entities/category.entity";
+import { SpesificationEntity } from "src/spesification/entities/spesification.entity";
+import { InventoryEntity } from "src/inventory/entities/inventory.entity";
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {
@@ -14,33 +16,46 @@ export class ProductEntity extends BaseEntity {
     @Column({ type: 'varchar', name: 'slug' })
     slug: string;
 
-    @ApiProperty()
-    @Column({ type: 'integer', name: 'price' })
-    price: number;
-
-    @ApiProperty()
-    @Column({ type: 'integer', name: 'discount_price' })
-    discountPrice: number;
 
     @ApiProperty()
     @Column({ type: 'varchar', name: 'description' })
     description: string;
 
     @ApiProperty()
-    @Column({ type: 'varchar', array: true, name: 'sizes' })
-    sizes: string[];
+    @Column({ type: 'varchar', name: 'sizes' })
+    size: string;
 
     @ApiProperty()
     @Column({ type: 'varchar', array: true, name: 'colors' })
-    colors: string[];
+    colors: string;
 
     @ApiProperty()
     @ManyToOne(() => CategoryEntity, x => x.products, { onDelete: "CASCADE" })
     @JoinColumn({ name: "category_id" })
     category: CategoryEntity
 
+    @ApiProperty()
     @Column({ nullable: false, name: 'category_id' })
     public categoryId: number
+
+    @ApiProperty()
+    @ManyToMany(() => SpesificationEntity, x => x.products, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinTable({
+        name: 'product_spesifications',
+        joinColumn: {
+            name: 'product_id',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'spesification_id',
+            referencedColumnName: 'id',
+        },
+    })
+    spesifications: SpesificationEntity[]
+
+    @ApiProperty()
+    @ManyToMany(() => InventoryEntity, x => x.products, { cascade: true })
+    inventories: InventoryEntity[]
 
     @ApiProperty()
     @DeleteDateColumn({ type: 'timestamp', name: 'deleted_at', default: null })

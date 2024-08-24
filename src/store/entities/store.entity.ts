@@ -1,8 +1,10 @@
-import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinTable, ManyToMany } from "typeorm";
+import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseEntity } from "src/common/base.entity";
 import slugify from "slugify";
 import { UserEntity } from "src/user/user.entity";
+import { InventoryEntity } from "src/inventory/entities/inventory.entity";
+import { CategoryEntity } from "src/category/entities/category.entity";
 
 @Entity('stores')
 export class StoreEntity extends BaseEntity {
@@ -31,6 +33,11 @@ export class StoreEntity extends BaseEntity {
         },
     })
     public users: UserEntity[];
+
+    @ApiProperty()
+    @OneToOne(() => InventoryEntity, x => x.store, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "inventory_id" })
+    inventory: InventoryEntity
 
     @BeforeInsert()
     async generateSlug() {
