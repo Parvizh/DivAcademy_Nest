@@ -3,7 +3,7 @@ import * as bcrypt from "bcryptjs"
 import { BaseEntity } from "../common/base.entity";
 import { RolesEnum } from "../enum/role.enum";
 import { ApiProperty } from "@nestjs/swagger";
-import { StoreEntity } from "src/store/entities/store.entity";
+import { StoreEntity } from "../store/store.entity";
 
 @Entity('users')
 export class UserEntity extends BaseEntity {

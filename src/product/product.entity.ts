@@ -1,10 +1,10 @@
 import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity } from "src/common/base.entity";
+import { BaseEntity } from "../common/base.entity";
 import slugify from "slugify";
-import { CategoryEntity } from "src/category/entities/category.entity";
-import { SpesificationEntity } from "src/spesification/entities/spesification.entity";
-import { InventoryEntity } from "src/inventory/entities/inventory.entity";
+import { CategoryEntity } from "../category/category.entity";
+import { SpesificationEntity } from "../spesification/spesification.entity";
+import { InventoryEntity } from "../inventory/inventory.entity";
 
 @Entity('products')
 export class ProductEntity extends BaseEntity {

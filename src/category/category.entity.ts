@@ -1,9 +1,9 @@
 import { BeforeInsert, Column, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity } from "../../common/base.entity";
+import { BaseEntity } from "../common/base.entity";
 import slugify from "slugify";
-import { ProductEntity } from "../../product/entitites/product.entity";
-import { SpesificationEntity } from "../../spesification/entities/spesification.entity";
+import { ProductEntity } from "../product/product.entity";
+import { SpesificationEntity } from "../spesification/spesification.entity";
 
 @Entity('categories')
 export class CategoryEntity extends BaseEntity {

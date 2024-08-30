@@ -31,11 +31,11 @@ export class AuthService {
             where: { email: body.email },
             select: ['id', 'email', 'password', 'role']
         });
-        if (!user) throw new HttpException("This creadentials is invalid", HttpStatus.BAD_REQUEST)
+        if (!user) throw new HttpException("This credentials is invalid", HttpStatus.BAD_REQUEST)
 
         const isValidPass = await bcrypt.compare(body.password, user.password);
 
-        if (!isValidPass) throw new HttpException("This creadentials is invalid", HttpStatus.BAD_REQUEST)
+        if (!isValidPass) throw new HttpException("This credentials is invalid", HttpStatus.BAD_REQUEST)
 
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {

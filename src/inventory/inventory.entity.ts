@@ -1,9 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseEntity } from "../../common/base.entity";
-import { Column, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm";
-import { StoreEntity } from "src/store/entities/store.entity";
-import { ProductEntity } from "src/product/entitites/product.entity";
+import { BaseEntity } from "../common/base.entity";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm";
+import { StoreEntity } from "../store/store.entity";
+import { ProductEntity } from "../product/product.entity";
 
+@Entity('inventories')
 export class InventoryEntity extends BaseEntity {
     @ApiProperty()
     @Column({ type: 'integer', name: 'price' })
