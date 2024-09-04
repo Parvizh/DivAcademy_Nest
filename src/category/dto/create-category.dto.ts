@@ -1,5 +1,6 @@
-import { ApiProperty, } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, } from "@nestjs/swagger";
 import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { CategoryEntity } from "../category.entity";
 
 
 export class CreateCategoryDto {
@@ -8,8 +9,8 @@ export class CreateCategoryDto {
     @IsString()
     title: string
 
-    @ApiProperty()
-    @IsNotEmpty()
+    @ApiPropertyOptional()
+    @IsOptional()
     @IsNumber()
     rate: number
 
@@ -18,4 +19,5 @@ export class CreateCategoryDto {
     @IsArray()
     parentIds: number[]
 
+    parents: CategoryEntity[] = [];
 }

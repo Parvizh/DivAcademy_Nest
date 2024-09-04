@@ -1,12 +1,13 @@
-import { ApiProperty, } from "@nestjs/swagger";
+import { ApiPropertyOptional, } from "@nestjs/swagger";
 import { IsNumber, IsOptional } from "class-validator";
 import { CommonQueryDto } from "../../auth/common/dto/query.dto";
+import { Transform } from "class-transformer";
 
 
 export class CategoryQueryDto extends CommonQueryDto {
-    @ApiProperty()
+    @ApiPropertyOptional()
+    @Transform(({ value }) => (value === 'null' || value === "" ? null : Number(value)))
     @IsOptional()
     @IsNumber()
-    parentId:number
-
+    parentId: number = null
 }

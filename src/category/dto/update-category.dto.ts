@@ -1,5 +1,6 @@
 import { ApiProperty, } from "@nestjs/swagger";
 import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { CategoryEntity } from "../category.entity";
 
 
 export class UpdateCategoryDto {
@@ -17,5 +18,7 @@ export class UpdateCategoryDto {
     @IsOptional()
     @IsArray()
     parentsIds: number[]
+
+    parents:CategoryEntity[]
 
 }

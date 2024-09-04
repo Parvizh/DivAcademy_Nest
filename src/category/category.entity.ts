@@ -20,11 +20,11 @@ export class CategoryEntity extends BaseEntity {
     @JoinTable({
         name: 'category_parent_subs',
         joinColumn: {
-            name: 'parent_id',
+            name: 'sub_id',
             referencedColumnName: 'id'
         },
         inverseJoinColumn: {
-            name: 'sub_id',
+            name: 'parent_id',
             referencedColumnName: 'id'
         }
     })
@@ -67,4 +67,7 @@ export class CategoryEntity extends BaseEntity {
             this.slug = slugify(this.title, { lower: true, trim: true });
         }
     }
+}
+export interface CategoryWithHooks extends CategoryEntity {
+    generateSlug: () => Promise<void>;
 }

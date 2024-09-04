@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, Repository } from 'typeorm';
-import { CategoryEntity } from './category.entity';
+import { CategoryEntity, CategoryWithHooks } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryQueryDto } from './dto/query.dto';
@@ -17,23 +17,24 @@ export class CategoryService {
     private async _checkChildren(ids: number[]) {
         if (ids?.length) {
             let error = false;
+            let categories: CategoryEntity[] = [];
             for (let index = 0; index < ids.length; index++) {
-                const doesCategoryExist = await this.categoryEntity.findOne({ where: { id: ids[index] } })
-                if (!doesCategoryExist) {
+                const categoryExist = await this.categoryEntity.findOne({ where: { id: ids[index] }, select: ['id'] })
+                if (!categoryExist) {
                     error = true
                     break
                 }
-
+                categories.push(categoryExist)
             }
             if (error) throw new NotFoundException("This category has not been found")
 
-
+            return categories
         }
     }
 
     async create(body: CreateCategoryDto) {
         try {
-            await this._checkChildren(body.parentIds)
+            body.parents = await this._checkChildren(body.parentIds)
             const category = this.categoryEntity.create(body);
             const result = await this.categoryEntity.save(category);
             return result
@@ -44,12 +45,18 @@ export class CategoryService {
 
     async update(body: UpdateCategoryDto, id: number) {
         try {
-            const categoryExist = await this.categoryEntity.findOne({ where: { id: id } })
+            const categoryExist = await this.categoryEntity.findOne({ where: { id }, relations: ['parents'] })
             if (!categoryExist) throw new NotFoundException("This category has not been found")
+                console.log(body.parentsIds)
+                body.parents = await this._checkChildren(body.parentsIds)
+            
+            const category: CategoryWithHooks = Object.assign(
+                categoryExist,
+                body
+            );
 
-            await this._checkChildren(body.parentsIds)
-            const category = await this.categoryEntity.update(body, categoryExist);
-            return category
+            const result = await this.categoryEntity.save(category)
+            return result
         } catch (error) {
             return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -61,38 +68,45 @@ export class CategoryService {
     }
 
     async findAll(query: CategoryQueryDto) {
-        const { limit, page, sort, orderBY, searchText, parentId }: CategoryQueryDto = query;
-        let categories: CategoryEntity[];
+        const { limit, page, sort, searchText, parentId }: CategoryQueryDto = query;
         const skip = (Number(page) - 1) * Number(limit)
 
         let queryBuilder = this.categoryEntity
             .createQueryBuilder('category')
-            .where('category.title LIKE :title', { title: `%${searchText}%` })
+            .leftJoinAndSelect('category.parents', 'parent')
+            .select(['category.id', 'category.title', 'category.slug', 'category.rate'])
             .take(limit)
             .skip(skip)
             .orderBy('category.rate', sort)
 
+        if (searchText) {
+            queryBuilder = queryBuilder.where('LOWER(category.title) LIKE :title', { title: `%${searchText.toLowerCase()}%` })
+        }
 
         if (parentId) {
-            const result = queryBuilder.leftJoinAndSelect('category.children', 'subs')
-                .andWhere('subs.parent_id =: parentId', { parentId })
-                .select(['category.id', 'subs.id', 'subs.title', 'subs.slug'])
-                .getMany()
-
-            categories = [...result[0].subs]
+            queryBuilder = queryBuilder
+                .andWhere('parent.id = :parentId', { parentId })
         }
         else {
-            categories = await queryBuilder
-                .andWhere('category.parentId IS NULL')
-                .getMany()
+            queryBuilder = queryBuilder
+                .andWhere('parent.id IS NULL')
         }
 
-        return { categories }
+        const [categories, count] = await queryBuilder.getManyAndCount()
+        return {
+            categories,
+            metadata: {
+                limit,
+                page,
+                count,
+                totalPages: Math.ceil(count / Number(limit))
+            }
+        }
     }
 
 
     async findAllAdmin(query: CommonQueryDto) {
-        const { limit, page, sort, orderBY, searchText }: CommonQueryDto = query;
+        const { limit, page, sort, orderBy, searchText }: CommonQueryDto = query;
 
         const skip = (Number(page) - 1) * Number(limit)
 
@@ -100,7 +114,7 @@ export class CategoryService {
             where: {
                 title: ILike(`%${searchText}%`)
             },
-            order: orderBY ? { [orderBY as string]: sort } : null,
+            order: orderBy ? { [orderBy as string]: sort } : null,
             take: limit,
             skip,
         })
@@ -111,10 +125,22 @@ export class CategoryService {
                 limit,
                 page,
                 count,
-                totalPages: count < Number(limit) ? count : Math.ceil(count / Number(limit))
+                totalPages: Math.ceil(count / Number(limit))
             }
         }
 
+    }
+
+    async delete(id: number) {
+        try {
+            const category = await this.categoryEntity.findOne({ where: { id } })
+
+            if (!category) throw new NotFoundException();
+
+            await this.categoryEntity.softDelete(id);
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
 }

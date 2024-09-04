@@ -1,30 +1,35 @@
-import { ApiProperty, } from "@nestjs/swagger";
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiPropertyOptional, } from "@nestjs/swagger";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { SORT_TYPE } from "../enums/sort.enum";
+import { Transform } from "class-transformer";
+import { PAGINATION_VALUES } from "src/constants/pagination.constant";
 
 
 export class CommonQueryDto {
-    @ApiProperty()
-    @IsOptional()
-    @IsNumber()
-    page: number = 1
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
+    @Transform(({ value }) => (value === 'null' || value === "" ? PAGINATION_VALUES.page : Number(value)))
     @IsNumber()
-    limit: number = 10
+    page: number = PAGINATION_VALUES.page
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
+    @Transform(({ value }) => (value === 'null' || value === "" ? PAGINATION_VALUES.limit : Number(value)))
     @IsNumber()
+    limit: number = PAGINATION_VALUES.limit;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsEnum(SORT_TYPE)
     sort: SORT_TYPE = SORT_TYPE.DESC
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsString()
-    orderBY: string
+    orderBy: string
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsOptional()
     @IsString()
     searchText: string
