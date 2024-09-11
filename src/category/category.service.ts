@@ -6,12 +6,17 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryQueryDto } from './dto/query.dto';
 import { CommonQueryDto } from 'src/auth/common/dto/query.dto';
+import { RedisCacheService } from 'src/redis-cache/redis-cache.service';
+import { CacheKeyEnum } from 'src/enum/cache-key.enum';
+import { PAGINATION_VALUES } from 'src/constants/pagination.constant';
+import { SORT_TYPE } from 'src/auth/common/enums/sort.enum';
 
 @Injectable()
 export class CategoryService {
     constructor(
         @InjectRepository(CategoryEntity)
-        private readonly categoryEntity: Repository<CategoryEntity>
+        private readonly categoryEntity: Repository<CategoryEntity>,
+        private readonly cacheService: RedisCacheService
     ) { }
 
     private async _checkChildren(ids: number[]) {
@@ -37,6 +42,9 @@ export class CategoryService {
             body.parents = await this._checkChildren(body.parentIds)
             const category = this.categoryEntity.create(body);
             const result = await this.categoryEntity.save(category);
+
+            await this.cacheService.deleteCache()
+
             return result
         } catch (error) {
             return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -47,15 +55,16 @@ export class CategoryService {
         try {
             const categoryExist = await this.categoryEntity.findOne({ where: { id }, relations: ['parents'] })
             if (!categoryExist) throw new NotFoundException("This category has not been found")
-                console.log(body.parentsIds)
-                body.parents = await this._checkChildren(body.parentsIds)
-            
+
+            body.parents = await this._checkChildren(body.parentsIds)
+
             const category: CategoryWithHooks = Object.assign(
                 categoryExist,
                 body
             );
 
             const result = await this.categoryEntity.save(category)
+            await this.cacheService.deleteCache()
             return result
         } catch (error) {
             return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -68,39 +77,59 @@ export class CategoryService {
     }
 
     async findAll(query: CategoryQueryDto) {
-        const { limit, page, sort, searchText, parentId }: CategoryQueryDto = query;
-        const skip = (Number(page) - 1) * Number(limit)
-
-        let queryBuilder = this.categoryEntity
-            .createQueryBuilder('category')
-            .leftJoinAndSelect('category.parents', 'parent')
-            .select(['category.id', 'category.title', 'category.slug', 'category.rate'])
-            .take(limit)
-            .skip(skip)
-            .orderBy('category.rate', sort)
-
-        if (searchText) {
-            queryBuilder = queryBuilder.where('LOWER(category.title) LIKE :title', { title: `%${searchText.toLowerCase()}%` })
-        }
-
-        if (parentId) {
-            queryBuilder = queryBuilder
-                .andWhere('parent.id = :parentId', { parentId })
+        const data = await this.cacheService.getCacheByKey(CacheKeyEnum.CATEGORY_FIND_ALL)
+        if (data
+            && query.page == PAGINATION_VALUES.page
+            && query.limit == PAGINATION_VALUES.limit
+            && query.searchText == null
+            && query.sort == SORT_TYPE.DESC
+            && query.orderBy == null) {
+            return data
         }
         else {
-            queryBuilder = queryBuilder
-                .andWhere('parent.id IS NULL')
-        }
+            const { limit, page, sort, searchText, parentId }: CategoryQueryDto = query;
+            const skip = (Number(page) - 1) * Number(limit)
 
-        const [categories, count] = await queryBuilder.getManyAndCount()
-        return {
-            categories,
-            metadata: {
-                limit,
-                page,
-                count,
-                totalPages: Math.ceil(count / Number(limit))
+            let queryBuilder = this.categoryEntity
+                .createQueryBuilder('category')
+                .leftJoinAndSelect('category.parents', 'parent')
+                .select(['category.id', 'category.title', 'category.slug', 'category.rate'])
+                .take(limit)
+                .skip(skip)
+                .orderBy('category.rate', sort)
+
+            if (searchText) {
+                queryBuilder = queryBuilder.where('LOWER(category.title) LIKE :title', { title: `%${searchText.toLowerCase()}%` })
             }
+
+            if (parentId) {
+                queryBuilder = queryBuilder
+                    .andWhere('parent.id = :parentId', { parentId })
+            }
+            else {
+                queryBuilder = queryBuilder
+                    .andWhere('parent.id IS NULL')
+            }
+
+            const [categories, count] = await queryBuilder.getManyAndCount()
+
+            const result = {
+                categories,
+                metadata: {
+                    limit,
+                    page,
+                    count,
+                    totalPages: Math.ceil(count / Number(limit))
+                }
+            }
+
+            
+            if (categories.length > 0) {
+                await this.cacheService.setCache(CacheKeyEnum.CATEGORY_FIND_ALL, result)
+            }
+
+            return { ...result }
+
         }
     }
 
@@ -138,6 +167,7 @@ export class CategoryService {
             if (!category) throw new NotFoundException();
 
             await this.categoryEntity.softDelete(id);
+            await this.cacheService.deleteCache()
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }

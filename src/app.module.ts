@@ -10,6 +10,8 @@ import { StoreModule } from './store/store.module';
 import { ProductModule } from './product/product.module';
 import { SpesificationModule } from './spesification/spesification.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { RedisCacheModule } from './redis-cache/redis-cache.module';
+import { SocketModule } from './socket/socket.module';
 import * as  path from 'path';
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import * as  path from 'path';
         database: configService.get<string>('DB_NAME'),
         logging: true,
         synchronize: false,
-        entities: [path.join(__dirname,'/**/*.entity{.js,.ts}')]
+        entities: [path.join(__dirname, '/**/*.entity{.js,.ts}')]
       })
 
     }),
@@ -37,6 +39,8 @@ import * as  path from 'path';
     ProductModule,
     SpesificationModule,
     InventoryModule,
+    RedisCacheModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

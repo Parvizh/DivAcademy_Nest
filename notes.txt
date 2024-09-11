@@ -2,3 +2,11 @@ npm i pg typeorm class-transformer class-validator dotenv
 npm i @nestjs/config @nestjs/typeorm
 npm i @nestjs/swagger --force
 npm i @nestjs/jwt --force
+npm i ioredis
+
+ docker run -d \
+  --name redis-container \
+  -p 6379:6379 \
+  -v redis-data:/data \
+  redis:latest
+
