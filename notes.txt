@@ -3,6 +3,7 @@ npm i @nestjs/config @nestjs/typeorm
 npm i @nestjs/swagger --force
 npm i @nestjs/jwt --force
 npm i ioredis
+npm i socket.io @nestjs/websockets @nestjs/platform-socket.io
 
  docker run -d \
   --name redis-container \

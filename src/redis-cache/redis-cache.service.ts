@@ -7,13 +7,13 @@ import { redisClient } from 'src/constants/redis.constant';
 export class RedisCacheService {
     constructor(@Inject(redisClient) private cache: RedisClientType) { }
 
-    async setCache(key: CacheKeyEnum, value) {
+    async setCache(key: string, value) {
         const result = await this.cache.set(key, JSON.stringify({ ...value }))
 
         return result
     }
 
-    async getCacheByKey(key: CacheKeyEnum) {
+    async getCacheByKey(key: string) {
         let result = await this.cache.get(key);
         return JSON.parse(result)
     }
