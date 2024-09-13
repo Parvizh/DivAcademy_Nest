@@ -12,6 +12,7 @@ import { SpesificationModule } from './spesification/spesification.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { SocketModule } from './socket/socket.module';
+import { ChatSessionModule } from './chat-session/chat-session.module';
 import * as  path from 'path';
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import * as  path from 'path';
     InventoryModule,
     RedisCacheModule,
     SocketModule,
+    ChatSessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

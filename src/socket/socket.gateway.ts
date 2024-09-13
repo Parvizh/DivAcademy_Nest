@@ -31,7 +31,6 @@ export class SocketsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     async handleConnection(client: Socket) {
         const { socketUser, userId, key } = await this.getUserFromCache(client.handshake.headers.token as string)
 
-
         if (socketUser) {
             socketUser.socketIds.push(client.id)
             await this.cacheService.setCache(key, socketUser)

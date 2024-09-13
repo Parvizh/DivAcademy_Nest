@@ -28,7 +28,8 @@ import { ConfigService } from '@nestjs/config';
           }
         );
         request['user'] = payload;
-      } catch {
+      } catch(error) {
+        console.log(error)
         throw new UnauthorizedException();
       }
       return true;
