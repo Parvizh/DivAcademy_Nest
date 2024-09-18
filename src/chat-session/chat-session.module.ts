@@ -7,6 +7,7 @@ import { ChatSessionEntity } from './chat-session.entity';
 import { MessageEntity } from './message.entity';
 import { UserEntity } from 'src/user/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { MessageService } from './services/message.service';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule
   ],
   controllers: [ChatSessionController],
-  providers: [ChatSessionService]
+  providers: [ChatSessionService,MessageService]
 })
 export class ChatSessionModule { }

@@ -3,7 +3,7 @@ import { ChatSessionEntity } from '../chat-session.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { UserEntity } from 'src/user/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class ChatSessionService {
@@ -39,4 +39,13 @@ export class ChatSessionService {
         }
     }
 
+    public async updateTime(id: number, manager: EntityManager) {
+        await manager.getRepository(ChatSessionEntity)
+            .createQueryBuilder('session')
+            .update(ChatSessionEntity)
+            .set({ updatedAt: () => 'CURRENT_TIMESTAMP' })
+            .where({id})
+            .execute()
+
+    }
 }
