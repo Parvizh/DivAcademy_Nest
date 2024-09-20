@@ -7,6 +7,7 @@ import { RedisCacheService } from 'src/redis-cache/redis-cache.service';
 import { SocketKeyEnum } from './enums/socket-key.enum';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ISocketUser } from './interfaces/socket-user.interface';
+import { MessageUpdateSeenDto } from 'src/chat-session/dto/message-seen.dto';
 
 @WebSocketGateway(80, {
     cors: {
@@ -58,6 +59,18 @@ export class SocketsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (socketUser) {
             socketUser.socketIds.map(socketId => {
                 this.server.to(socketId).emit(SocketKeyEnum.MESSAGE, body);
+            })
+        }
+    }
+
+
+    @SubscribeMessage(SocketKeyEnum.MESSAGE_SEEN)
+    async messageSeen(@MessageBody() body: MessageUpdateSeenDto) {
+        const key = `${CacheKeyEnum.GET_SOCKET_USER}-${body.userToId}`
+        const socketUser: ISocketUser = await this.cacheService.getCacheByKey(key)
+        if (socketUser) {
+            socketUser.socketIds.map(socketId => {
+                this.server.to(socketId).emit(SocketKeyEnum.MESSAGE_SEEN, {messageSeen:true,sessionId:body.sessionId});
             })
         }
     }

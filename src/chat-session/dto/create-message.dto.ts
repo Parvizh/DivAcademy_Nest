@@ -13,6 +13,6 @@ export class CreateMessageDto {
     text: string
 
     userFromId: number;
-    sesssionId: number;
+    chatSessionId: number;
     hasSeen: boolean;
 }

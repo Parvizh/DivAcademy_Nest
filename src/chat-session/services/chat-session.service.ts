@@ -4,12 +4,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { UserEntity } from 'src/user/user.entity';
 import { EntityManager, Repository } from 'typeorm';
+import { CommonQueryDto } from 'src/auth/common/dto/query.dto';
+import { MessageEntity } from '../message.entity';
 
 @Injectable()
 export class ChatSessionService {
     constructor(
         @InjectRepository(ChatSessionEntity)
         private readonly sessionRep: Repository<ChatSessionEntity>,
+        @InjectRepository(MessageEntity)
+        private readonly messageRep: Repository<MessageEntity>,
         @InjectRepository(UserEntity)
         private readonly userRep: Repository<UserEntity>) { }
 
@@ -39,12 +43,34 @@ export class ChatSessionService {
         }
     }
 
+    async findAll(userId: number, query: CommonQueryDto) {
+        const { limit, page, sort, searchText }: CommonQueryDto = query;
+        const skip = (Number(page) - 1) * Number(limit)
+
+        let result = await this.sessionRep
+            .createQueryBuilder('chat_session')
+            .where('(chat_session.userToId = :userId OR chat_session.userFromId = :userId)', { userId })
+            .leftJoinAndSelect('chat_session.messages', 'messages')
+            .leftJoin(
+                'chat_session.messages', 'next_messages',
+                'messages.updatedAt < next_messages.updatedAt')
+            .andWhere('next_messages.id IS NULL')
+            .select(['chat_session', 'messages.userFromId', 'messages.userToId', 'messages.hasSeen'])
+            .take(limit)
+            .skip(skip)
+            .orderBy('chat_session.updatedAt', sort)
+            .getMany()
+
+
+        return result;
+    }
+
     public async updateTime(id: number, manager: EntityManager) {
         await manager.getRepository(ChatSessionEntity)
             .createQueryBuilder('session')
             .update(ChatSessionEntity)
             .set({ updatedAt: () => 'CURRENT_TIMESTAMP' })
-            .where({id})
+            .where({ id })
             .execute()
 
     }
