@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseEntity } from "../common/base.entity";
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm";
 import { ChatSessionEntity } from "./chat-session.entity";
 import { UserEntity } from "../user/user.entity";
 

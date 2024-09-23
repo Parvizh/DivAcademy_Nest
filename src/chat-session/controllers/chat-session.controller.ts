@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ChatSessionService } from '../services/chat-session.service';
 import { ChatSessionEntity } from '../chat-session.entity';
@@ -74,6 +74,19 @@ export class ChatSessionController {
         @Param("id") sessionId: number,
         @Request() req) {
         return this.messageService.messageSeen(req.user.sub, sessionId);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({
+        description: 'Delete chat session by user',
+    })
+    deleteSessionByUser(
+        @Param("id") sessionId: number,
+        @Request() req) {
+        return this.sessionService.deleteSessionByUser(req.user.sub, sessionId);
     }
 
 }

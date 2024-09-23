@@ -8,6 +8,7 @@ import { MessageEntity } from '../message.entity';
 import { ChatSessionService } from './chat-session.service';
 import { SocketsGateway } from 'src/socket/socket.gateway';
 import { MessageUpdateSeenDto } from '../dto/message-seen.dto';
+import { CommonQueryDto } from 'src/auth/common/dto/query.dto';
 
 @Injectable()
 export class MessageService {
@@ -52,6 +53,32 @@ export class MessageService {
         }
     }
 
+    async findAll(sessionId, userId: number, query: CommonQueryDto) {
+        const { limit, page, sort, searchText }: CommonQueryDto = query;
+        const skip = (Number(page) - 1) * Number(limit)
+
+        const isSession = await this.sessionRep.findOne({ where: { id: sessionId } })
+
+        if (!isSession) return new NotFoundException()
+
+
+        if ((isSession.userFromId == userId && isSession.userFromIsDelete == true) || (isSession.userToId == userId && isSession.userToIsDelete == true)) {
+            return []
+        }
+
+        let result = await this.messageRep
+            .createQueryBuilder('m')
+            // .where('(m.userToId = :userId OR m.userFromId = :userId)', { userId })
+            .where('m.chatSessionId = :id', { id: sessionId })
+            .select(['m'])
+            .take(limit)
+            .skip(skip)
+            .orderBy('m.createAt', sort)
+            .getMany()
+
+        return result;
+    }
+
     async messageSeen(userId: number, sessionId: number) {
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect()
@@ -71,6 +98,6 @@ export class MessageService {
 
             await this.socketGateway.messageSeen({ userToId, sessionId: isSessionExist.id })
         }
-        else return new BadRequestException("This seesion doesn't belong this user")
+        else return new BadRequestException("This session doesn't belong this user")
     }
 }
